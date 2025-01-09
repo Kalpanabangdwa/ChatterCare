@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatterCare - Mental Health Support</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <!-- Link to your custom CSS -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-box {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .chat-box .user-message, .chat-box .bot-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #a4d6f1;
+            align-self: flex-start;
+        }
+
+        .bot-message {
+            background-color: #f1e3b8;
+            align-self: flex-end;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            border-radius: 20px;
+            padding: 12px;
+            border: 2px solid #ccc;
+            font-size: 16px;
+            width: 80%;
+        }
+
+        #send-btn {
+            background-color: #4CAF50;
+            border: none;
+            padding: 12px 20px;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #send-btn:hover {
+            background-color: #45a049;
+        }
+
+        .chat-log img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-header img {
+            width: 60px;
+            height: 60px;
+        }
+
+        .chat-header h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header text-center">
+            <img src="https://img.freepik.com/free-photo/3d-delivery-robot-working_23-2151150059.jpg?ga=GA1.1.316003356.1731872209&semt=ais_hybrid" alt="Chatbot Icon" />
+            <h1>ChatterCare - Your Mental Health Companion</h1>
+        </div>
+
+        <div class="chat-box" id="chat-log">
+            <!-- Chat messages will appear here -->
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="user-input" class="form-control" placeholder="Type your message..." />
+            <button class="btn btn-primary" id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatLog = document.getElementById('chat-log');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Function to add a bot message
+        function addBotMessage(message) {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('bot-message');
+            botMessage.innerHTML = `
+                <div class="chat-log">htt
+                    <img src="https://img.freepik.com/free-photo/3d-delivery-robot-working_23-2151150059.jpg?ga=GA1.1.316003356.1731872209&semt=ais_hybrid" alt="Bot" />
+                    <span>${message}</span>
+                </div>
+            `;
+            chatLog.appendChild(botMessage);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Function to add a user message
+        function addUserMessage(message) {
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('user-message');
+            userMessage.textContent = message;
+            chatLog.appendChild(userMessage);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Send message
+        sendBtn.addEventListener('click', () => {
+            const message = userInput.value;
+            if (message.trim() === '') return;
+
+            // Display user's message
+            addUserMessage(message);
+
+            // Send message to Flask backend
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ msg: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display bot's response
+                addBotMessage(data.response);
+                userInput.value = ''; // Clear input field
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // Display initial welcome message from ChatterCare
+        window.onload = () => {
+            addBotMessage("Hello, I'm ChatterCare! How can I assist you today?");
+        };
+    </script>
+
+</body>
+</html>
